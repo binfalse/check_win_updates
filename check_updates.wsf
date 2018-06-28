@@ -1,0 +1,64 @@
+<job>
+	<script language="VBScript">
+
+'a=Split("Brown cow, White horse, Yellow chicken",",")
+'WScript.Echo a
+
+'Set fso = CreateObject ("Scripting.FileSystemObject")
+'Set stdout = fso.GetStandardStream (1)
+'WScript.StdOut.WriteLine "This will go to | standard output."
+
+'Dim info
+'info = "test 1 test 2" & " ^^| " & "test and test"
+'info = "test 1 test 2" & String (1,124) & "test and test"
+'info.ListSeparator = "%" 
+
+
+'WScript.Echo info
+'document.write(info)
+
+
+'		Wscript.Quit(0)
+
+
+		' Reboot required?
+		reboot = " not checking for reboot"
+		Set objSysInfo = CreateObject("Microsoft.Update.SystemInfo")
+		If objSysInfo.RebootRequired Then
+
+			reboot = " Reboot required!"
+			status = 1 
+		
+		Else
+
+			reboot = " No Reboot required."
+			status = 0
+
+		End If
+
+
+Set updateSession = CreateObject("Microsoft.Update.Session")
+updateSession.ClientApplicationID = "binfalse.de check windows updates"
+Set updateSearcher = updateSession.CreateUpdateSearcher()
+'WScript.Echo "Searching for updates..." & vbCRLF
+Set searchResult = _
+updateSearcher.Search("IsAssigned=1 and IsHidden=0 and IsInstalled=0")
+'WScript.Echo "List of applicable items on the machine:"
+
+
+If searchResult.Updates.Count = 0 Then
+    WScript.Echo "No updates detected." & reboot
+Else
+	status = 2
+	info = "Updates: "
+	For I = 0 To searchResult.Updates.Count-1
+    		Set update = searchResult.Updates.Item(I)
+    		' WScript.Echo I + 1 & "> " & update.Title
+		info = info & update.Title & "; "
+	Next
+ WScript.Echo searchResult.Updates.Count  & " updates detected!" & reboot & "|" & info
+End If
+		Wscript.Quit(status)
+	
+	</script>
+</job>
