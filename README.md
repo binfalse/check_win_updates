@@ -22,14 +22,17 @@ The check for required reboots is performed using an `Microsoft.Update.SystemInf
 The installation of course depends on your infrastructure.
 For example, if your running your checks using the NSClient++, you may save the script as `C:\Program Files\NSClient++\scripts\check_win_updates.wsf` and then add something like that to your `C:\Program Files\NSClient++\nsclient.ini`:
 
+    [/settings/default]
+    timeout = 90
+    
     [/settings/external scripts/wrappings]
-    wsf=cscript.exe //T:40 //NoLogo scripts\%SCRIPT% %ARGS%
+    wsf=cscript.exe //T:90 //NoLogo scripts\%SCRIPT% %ARGS%
     
     [/settings/external scripts/wrapped scripts]
     check_updates = check_win_updates.wsf
 
-The timeout of 40 is primarily for Windows 7 systems, which actually need a lot of time to search through installed updates...
-Also make sure that your call of the nrpe tool at the monitoring server waits long enough for the answer!
+The timeout of 90 seconds is primarily for Windows 7 systems, which actually need a lot of time to search through installed updates...
+Also make sure that your call of the nrpe tool at the monitoring server waits long enough for the answer! (`.../check_nrpe3 [...] -t 90 [...]`)
 
 To properly parse the details about pending updates, you may also need to add
 
