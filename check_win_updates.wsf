@@ -1,3 +1,6 @@
+' check_win_updates.wsf
+' v1.0 - 2018-06-29 - binfalse
+' v1.1 - 2019-12-24 - nelbren - add performance data
 <job>
 	<script language="VBScript">
 
@@ -6,9 +9,11 @@
 		Set objSysInfo = CreateObject("Microsoft.Update.SystemInfo")
 		If objSysInfo.RebootRequired Then
 			reboot = " Reboot required!"
+			reboot_required = 1
 			status = 1
 		Else
 			reboot = " No Reboot required."
+			reboot_required = 0
 			status = 0
 		End If
 
@@ -19,21 +24,38 @@
 		Set updateSearcher = updateSession.CreateUpdateSearcher()
 		Set searchResult = _
 		updateSearcher.Search("IsAssigned=1 and IsHidden=0 and IsInstalled=0")
-
+		
+		' add performance data
+		perf = "updates=" & searchResult.Updates.Count
 
 		If searchResult.Updates.Count = 0 Then
-			WScript.Echo "No updates detected." & reboot
+			perf = perf & " antivirus=0 reboot_required=" & reboot_required
+			WScript.Echo "No updates detected." & reboot & "|" & perf
 		Else
+			' add antivirus data
+			Set objRE = New RegExp
+			With objRE
+				.Pattern    = "Update for Windows Defender Antivirus"
+				.IgnoreCase = True
+				.Global     = False
+			End With
+			antivirus = 0
 			status = 2
 			info = "Updates: "
 			For I = 0 To searchResult.Updates.Count-1
 				Set update = searchResult.Updates.Item(I)
 				' WScript.Echo I + 1 & "> " & update.Title
 				info = info & update.Title & "; "
+				If objRE.Test( update.Title ) Then
+					antivirus = 1
+				End If
 			Next
-			WScript.Echo searchResult.Updates.Count  & " updates detected!" & reboot & "|" & info
+			'WScript.Echo searchResult.Updates.Count  & " updates detected!" & reboot & "|" & info
+			perf = perf & " antivirus=" & antivirus & " reboot_required=" & reboot_required
+			WScript.Echo searchResult.Updates.Count  & " updates detected!" & reboot & "|" & perf
 		End If
 		Wscript.Quit(status)
 
 	</script>
 </job>
+
